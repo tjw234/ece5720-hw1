@@ -9,7 +9,7 @@ set output 'mm_rbyc_plots.eps'
 set title "row-by-column mm mult"
 set title font "Helvetica,18"
 set xlabel "log of matrix size"
-set ylabel "time"
+set ylabel "time (sec)"
 set grid
 plot "rbyc.csv" u 1:2 w lp lw 3 title "rbyc"
 

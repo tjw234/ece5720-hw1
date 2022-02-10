@@ -4,3 +4,5 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(rbyc tjw234_hw1_1.c)
 add_executable(tile tjw234_hw1_2.c)
+
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3")

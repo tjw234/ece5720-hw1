@@ -1,1 +1,8 @@
 /build/
+rbyc
+rbyc-O3
+tile
+tile-O3
+tile.csv
+rbyc.csv
+.vscode/settings.json

@@ -14,7 +14,7 @@ set grid
 set key right top
 N = 5
 plot for [i=2:N] "tile.csv" u (column(1)):((column(i))) w lp\
-     lw 3 title "bs-".(i)
+     lw 3 title "bs-2^".(i+1)
 #plot 'tile.csv' using 1:2 w lp lw 3 title 'length1', \
 #     '' using 1:3 w lp lw 3 title 'length2', \
 #     '' using 1:4 w lp lw 3 title 'length3'
