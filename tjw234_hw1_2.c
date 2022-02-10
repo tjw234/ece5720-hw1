@@ -58,9 +58,7 @@ int main(int argc, char *argv[]) {
 
     // open file for recording time measurements
     FILE *fp = NULL;
-    FILE *fp_n = NULL;
     fp = fopen("tile.csv", "w");
-    fp_n = fopen("tile_normalized.csv", "w");
 
     // define subblocks and allocate memory
     float *tile_a, *tile_b, *tile_c;
@@ -106,7 +104,6 @@ int main(int argc, char *argv[]) {
     for (arr_size = MIN_SIZE; arr_size <= MAX_SIZE; arr_size = arr_size * 2) {
         sprintf(time_write_buffer, "%03.9f", (float)log_size);
         fputs(time_write_buffer, fp);
-        fputs(time_write_buffer, fp_n);
         // ------- loop from MIN_BLOCK, doubling the size, up to MAX_BLOCK
         for (block_size = MIN_BLOCK; block_size <= MAX_BLOCK;
              block_size = block_size * 2) {
@@ -154,19 +151,14 @@ int main(int argc, char *argv[]) {
             double normalizer =(double)  arr_size *(double)  arr_size *(double)  arr_size;
             double normalize = time / normalizer * (double) pow(10., 9.);
 
-            // record absolute time
+            // record normalized time
             sprintf(time_write_buffer, ", %03.9f", normalize);
             // write to file
             fputs(time_write_buffer, fp_n);
-            //Unnormalized time
-            sprintf(time_write_buffer, ", %03.9f", time);
-            // write to file
-            fputs(time_write_buffer, fp);
-            // end of block size loop
+
         }
         log_size++; //Update size for printing purposes
         fputs("\n", fp);
-        fputs("\n", fp_n);
     }   // end of matrix size loop
     // close the file and free memory
     fclose(fp);
@@ -191,14 +183,7 @@ int main(int argc, char *argv[]) {
     }
     // Close the pipe
     pclose(tp);
-    //
-    FILE *tp_n = NULL;
-    if ((tp_n = popen("gnuplot plot_tile_normalized.gp", "w")) == NULL) {
-        perror("popen");
-        exit(1);
-    }
-    // Close the pipe
-    pclose(tp_n);
+
 
     return 0;
 }
