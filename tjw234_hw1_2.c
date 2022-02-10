@@ -53,19 +53,21 @@ int main(int argc, char *argv[]) {
     int block_size;
     // variables for timings
     struct timespec start, end;
-    double sec, nsec, exec_time;
-    double log_size = 6;
+    float sec, nsec, exec_time;
+    float log_size = 6;
 
     // open file for recording time measurements
     FILE *fp = NULL;
+    FILE *fp_n = NULL;
     fp = fopen("tile.csv", "w");
+    fp_n = fopen("tile_normalized.csv", "w");
 
     // define subblocks and allocate memory
-    double *tile_a, *tile_b, *tile_c;
+    float *tile_a, *tile_b, *tile_c;
 
     // define matrices
-    double **a, **b, **c;                 // Matricies as pointer arrays
-    double *a_array, *b_array, *c_array;  // Matricies as 1 d array
+    float **a, **b, **c;                 // Matricies as pointer arrays
+    float *a_array, *b_array, *c_array;  // Matricies as 1 d array
 
     // allocate space for c, use malloc or  calloc
 
@@ -74,25 +76,25 @@ int main(int argc, char *argv[]) {
     // once verified that the code is correct, initialize as needed
 
     // allocate memory and initialize a
-    a = (double **)malloc(n * sizeof(double *));
+    a = (float **)malloc(n * sizeof(float *));
     for (i = 0; i < n; i++) {
-        a[i] = (double *)malloc(n * sizeof(double));
+        a[i] = (float *)malloc(n * sizeof(float));
         for (j = 0; j < n; j++) {
             a[i][j] = 1.0 * i;
         }
     }
     // allocate memory and initialize b
-    b = (double **)malloc(n * sizeof(double *));
+    b = (float **)malloc(n * sizeof(float *));
     for (i = 0; i < n; i++) {
-        b[i] = (double *)malloc(n * sizeof(double));
+        b[i] = (float *)malloc(n * sizeof(float));
         for (j = 0; j < n; j++) {
             b[i][j] = 1.0 * j;
         }
     }
     // allocate memory for output (c) and initalize it to 0
-    c = (double **)malloc(n * sizeof(double *));
+    c = (float **)malloc(n * sizeof(float *));
     for (i = 0; i < n; i++) {
-        c[i] = (double *)malloc(n * sizeof(double));
+        c[i] = (float *)malloc(n * sizeof(float));
         for (j = 0; j < n; j++) {
             c[i][j] = 0.0;
         }
@@ -102,8 +104,9 @@ int main(int argc, char *argv[]) {
 
     // ------- loop from MIN_SIZE, doubling the size, up to MAX_SIZE
     for (arr_size = MIN_SIZE; arr_size <= MAX_SIZE; arr_size = arr_size * 2) {
-        sprintf(time_write_buffer, "%03.9f", (double)log_size);
+        sprintf(time_write_buffer, "%03.9f", (float)log_size);
         fputs(time_write_buffer, fp);
+        fputs(time_write_buffer, fp_n);
         // ------- loop from MIN_BLOCK, doubling the size, up to MAX_BLOCK
         for (block_size = MIN_BLOCK; block_size <= MAX_BLOCK;
              block_size = block_size * 2) {
@@ -116,16 +119,25 @@ int main(int argc, char *argv[]) {
             // start the clock
             clock_gettime(CLOCK_MONOTONIC, &start);
             // Multiply a * b = c
+
+            //The first two for loops choose some tile C(ib, jb) to evaluate
+            //ib, jb and kb use absolute posistion instead of changing the coordinate system 
             for(ib = 0; ib < arr_size; ib += block_size){
                 for(jb = 0; jb < arr_size; jb += block_size){
+                    //Then select the corresponding row and column of tiles to calculate the dot product of
+                    //A(ib, kb)*B(ib,kb)
                     for(kb = 0; kb <arr_size; kb += block_size){
+                        //Standard dot product inside the tile. 
+                        //A(ib,kb)(i, k)
                         for(i = ib; i < ib + block_size; i++){
                             for(j = jb; j < jb + block_size; j++){
-                                double sum = 0.0;
+                                float parital_dot_product = 0.0;
+                                //calculate the dot product inside the tile
                                 for(k = kb; k < kb + block_size; k++){
-                                    sum += a[i][k] * b[k][j];
+                                    parital_dot_product += a[i][k] * b[k][j];
                                 }
-                                c[i][j] += sum;
+                                //Add the partial dot product to the parital sum currently in c[i][j]
+                                c[i][j] += parital_dot_product;
                             }
                         }
                         // printf("Submatrix A(%d, %d)*B(%d, %d) finished\n", ib, kb, kb, jb);
@@ -135,30 +147,27 @@ int main(int argc, char *argv[]) {
             // Stop the clock
             clock_gettime(CLOCK_MONOTONIC, &end);
             // calculate time taken for this size
-            double sec = end.tv_sec - start.tv_sec;
-            double ns = end.tv_nsec - start.tv_nsec;
-            double time = (sec) + (ns * (double)pow(10., -9.));
+            float sec = end.tv_sec - start.tv_sec;
+            float ns = end.tv_nsec - start.tv_nsec;
+            float time = (sec) + (ns * (float)pow(10., -9.));
+            //normalized to n^3
+            double normalizer =(double)  arr_size *(double)  arr_size *(double)  arr_size;
+            double normalize = time / normalizer * (double) pow(10., 9.);
 
             // record absolute time
+            sprintf(time_write_buffer, ", %03.9f", normalize);
+            // write to file
+            fputs(time_write_buffer, fp_n);
+            //Unnormalized time
             sprintf(time_write_buffer, ", %03.9f", time);
-            printf("%03.9f, %03.9f \n", (double)log_size,
-                   time);
-
             // write to file
             fputs(time_write_buffer, fp);
+            // end of block size loop
         }
-        log_size++;
+        log_size++; //Update size for printing purposes
         fputs("\n", fp);
-    }  // end of block size loop
-       // end of matrix size loop
-
-    // sanity check, remove from the final code
-    for (i = 0; i < 8; i++) {
-        for (j = 0; j < 8; j++) {
-            printf("%8.2e  ", c[i][j]);
-        }
-        printf("\n");
-    }
+        fputs("\n", fp_n);
+    }   // end of matrix size loop
     // close the file and free memory
     fclose(fp);
     // Free
@@ -182,6 +191,14 @@ int main(int argc, char *argv[]) {
     }
     // Close the pipe
     pclose(tp);
+    //
+    FILE *tp_n = NULL;
+    if ((tp_n = popen("gnuplot plot_tile_normalized.gp", "w")) == NULL) {
+        perror("popen");
+        exit(1);
+    }
+    // Close the pipe
+    pclose(tp_n);
 
     return 0;
 }

@@ -5,5 +5,5 @@ make
 cp rbyc ..
 cp tile ..
 cd ..
-# ./rbyc
+./rbyc
 ./tile

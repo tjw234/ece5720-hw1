@@ -33,10 +33,10 @@ int main(int argc, char** argv)
   fp = fopen("rbyc.csv", "w");
 
   // declare matrices
-  double **a, **b, **c;
+  float **a, **b, **c;
 
   // time measurement variables
-  double time;
+  float time;
   struct timespec start, end;
 
   // get clock resolution
@@ -50,25 +50,25 @@ int main(int argc, char** argv)
   // then set matrices to what is needed
 
   // allocate memory and initialize a
-  a = (double**)malloc(n * sizeof(double*));
+  a = (float**)malloc(n * sizeof(float*));
   for (i = 0; i < n; i++) {
-    a[i] = (double*)malloc(n * sizeof(double));
+    a[i] = (float*)malloc(n * sizeof(float));
     for (j = 0; j < n; j++) {
         a[i][j] = 1.0 * i;
     }
   }
   // allocate memory and initialize b
-  b = (double**)malloc(n * sizeof(double*));
+  b = (float**)malloc(n * sizeof(float*));
   for (i = 0; i < n; i++) {
-    b[i] = (double*)malloc(n * sizeof(double));
+    b[i] = (float*)malloc(n * sizeof(float));
     for (j = 0; j < n; j++) {
       b[i][j] = 1.0 * j;
     }
   }
   // allocate memory for output (c) and initalize it to 0
-  c = (double**)malloc(n * sizeof(double*));
+  c = (float**)malloc(n * sizeof(float*));
   for (i = 0; i < n; i++) {
-    c[i] = (double*)malloc(n * sizeof(double));
+    c[i] = (float*)malloc(n * sizeof(float));
     for (j = 0; j < n; j++) {
       c[i][j] = 0.0;
     }
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
     for(i = 0; i < size; i++){
       for(j = 0; j < size; j++){
-        double dot_product = 0.0;
+        float dot_product = 0.0;
         for(k = 0; k < size; k++){
           dot_product = dot_product + (a[i][k] * b[k][j]);
         }
@@ -94,27 +94,20 @@ int main(int argc, char** argv)
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     // calculate time taken for this size
-    double sec = end.tv_sec - start.tv_sec;
-    double ns = end.tv_nsec - start.tv_nsec;
-    double time = (sec) + (ns * (double) pow(10., -9.));
-
+    float sec = end.tv_sec - start.tv_sec;
+    float ns = end.tv_nsec - start.tv_nsec;
+    float time = (sec) + (ns * (float) pow(10., -9.));
+    //Normalized to n^3
+    double normalizer = (double) size *(double)  size *(double)  size;
+    double normalize = time / normalizer* (double) pow(10., 9.);
     // record absolute time
-    sprintf(time_write_buffer, "%03.9f, %03.9f \n", (double) log_size, time);
-    printf(time_write_buffer, "%03.9f, %03.9f \n", (double) log_size, time);
+    sprintf(time_write_buffer, "%03.9f, %03.9f \n", (float) log_size, normalize);
     log_size++;
 
     // write to file
     fputs(time_write_buffer, fp);
 
   } // end of size loop
-
-  // for sanity check print 8 by 8 upper left submatrix of the product c
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
-      printf("%8.2e ", c[i][j]);
-    }
-    printf("\n");
-  }
 
   fclose(fp);
   //Free 
