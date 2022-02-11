@@ -2,7 +2,7 @@
 # Set the output file type
 set terminal postscript eps enhanced color solid colortext 18
 # Set the output file name
-set output 'mm_tile_plots.eps'
+set output 'mm_tile_plot_normalized.eps'
 
 # Now plot the data with lines and points
 set title "tiled mm mult"

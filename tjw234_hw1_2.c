@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
             // record normalized time
             sprintf(time_write_buffer, ", %03.9f", normalize);
             // write to file
-            fputs(time_write_buffer, fp_n);
+            fputs(time_write_buffer, fp);
 
         }
         log_size++; //Update size for printing purposes

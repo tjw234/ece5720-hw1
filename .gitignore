@@ -6,3 +6,5 @@ tile-O3
 tile.csv
 rbyc.csv
 .vscode/settings.json
+tile_test
+rbyc_test

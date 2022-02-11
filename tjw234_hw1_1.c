@@ -110,12 +110,13 @@ int main(int argc, char** argv)
   } // end of size loop
 
   fclose(fp);
-  //Free 
+  //Free rows of the matrix
   for(i = 0; i < n; i++){
     free(a[i]);
     free(b[i]);
     free(c[i]);
   }
+  //Free the column of pointers
   free(a);
   free(b);
   free(c);
